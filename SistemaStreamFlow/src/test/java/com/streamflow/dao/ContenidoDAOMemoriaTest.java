@@ -1,9 +1,9 @@
 package com.streamflow.dao;
 
-import com.streamflow.model.CalidadStreaming;
-import com.streamflow.model.Contenido;
-import com.streamflow.model.Genero;
-import com.streamflow.model.Pelicula;
+import com.streamflow.modelo.CalidadStreaming;
+import com.streamflow.modelo.Contenido;
+import com.streamflow.modelo.Genero;
+import com.streamflow.modelo.Pelicula;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -54,5 +54,4 @@ class ContenidoDAOMemoriaTest {
         assertTrue(contenidoDAO.listarTodos().isEmpty());
     }
 }
-
 

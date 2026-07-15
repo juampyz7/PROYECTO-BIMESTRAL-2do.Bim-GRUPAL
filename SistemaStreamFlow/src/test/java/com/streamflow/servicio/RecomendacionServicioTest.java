@@ -15,9 +15,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class RecomendacionServiceTest {
+class RecomendacionServicioTest {
 
-    private RecomendacionService recomendacionService;
+    private RecomendacionServicio recomendacionServicio;
     private ContenidoDAO contenidoDAO;
 
     @BeforeEach
