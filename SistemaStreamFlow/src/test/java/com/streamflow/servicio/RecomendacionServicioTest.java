@@ -2,11 +2,11 @@ package com.streamflow.servicio;
 
 import com.streamflow.dao.ContenidoDAO;
 import com.streamflow.dao.ContenidoDAOMemoria;
-import com.streamflow.model.CalidadStreaming;
-import com.streamflow.model.Contenido;
-import com.streamflow.model.Genero;
-import com.streamflow.model.Pelicula;
-import com.streamflow.model.Serie;
+import com.streamflow.modelo.CalidadStreaming;
+import com.streamflow.modelo.Contenido;
+import com.streamflow.modelo.Genero;
+import com.streamflow.modelo.Pelicula;
+import com.streamflow.modelo.Serie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +23,7 @@ class RecomendacionServicioTest {
     @BeforeEach
     void configurar() {
         contenidoDAO = new ContenidoDAOMemoria();
-        recomendacionService = new RecomendacionService(contenidoDAO);
+        recomendacionServicio = new RecomendacionServicio(contenidoDAO);
     }
 
     @Test
@@ -32,7 +32,7 @@ class RecomendacionServicioTest {
         contenidoDAO.guardar(new Serie(2, "Serie larga", Genero.DRAMA, CalidadStreaming.HD, 45, 5, 10));
         contenidoDAO.guardar(new Pelicula(3, "Comedia", Genero.COMEDIA, CalidadStreaming.HD, 100, "Director B"));
 
-        List<Contenido> recomendados = recomendacionService.recomendarPorGenero(Genero.DRAMA);
+        List<Contenido> recomendados = recomendacionServicio.recomendarPorGenero(Genero.DRAMA);
 
         assertEquals(2, recomendados.size());
         assertEquals("Serie larga", recomendados.get(0).getTitulo());
@@ -42,7 +42,7 @@ class RecomendacionServicioTest {
     void obtenerResumenReproduccionIncluyeReproduccionYDetalles() {
         Contenido pelicula = new Pelicula(1, "Matrix", Genero.CIENCIA_FICCION, CalidadStreaming.UHD_4K, 136, "Wachowski");
 
-        String resumen = recomendacionService.obtenerResumenReproduccion(pelicula);
+        String resumen = recomendacionServicio.obtenerResumenReproduccion(pelicula);
 
         assertTrue(resumen.contains("Reproduciendo pelicula"));
         assertTrue(resumen.contains("Matrix"));

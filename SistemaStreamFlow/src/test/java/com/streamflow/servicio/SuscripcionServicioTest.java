@@ -18,21 +18,21 @@ class SuscripcionServicioTest {
     @BeforeEach
     void configurar() {
         suscripcionDAO = new SuscripcionDAOMemoria();
-        suscripcionService = new SuscripcionService(suscripcionDAO);
+        suscripcionServicio = new SuscripcionServicio(suscripcionDAO);
     }
 
     @Test
     void calcularCostoMensualSegunCalidad() {
-        assertEquals(4.99, suscripcionService.calcularCostoMensual(CalidadStreaming.SD));
-        assertEquals(8.99, suscripcionService.calcularCostoMensual(CalidadStreaming.HD));
-        assertEquals(13.99, suscripcionService.calcularCostoMensual(CalidadStreaming.UHD_4K));
+        assertEquals(4.99, suscripcionServicio.calcularCostoMensual(CalidadStreaming.SD));
+        assertEquals(8.99, suscripcionServicio.calcularCostoMensual(CalidadStreaming.HD));
+        assertEquals(13.99, suscripcionServicio.calcularCostoMensual(CalidadStreaming.UHD_4K));
     }
 
     @Test
     void calcularCostoConDescuentoPorAntiguedad() {
-        double costoSinDescuento = suscripcionService.calcularCostoConDescuento(CalidadStreaming.HD, 2);
-        double costoDescuentoMedio = suscripcionService.calcularCostoConDescuento(CalidadStreaming.HD, 6);
-        double costoDescuentoAlto = suscripcionService.calcularCostoConDescuento(CalidadStreaming.HD, 12);
+        double costoSinDescuento = suscripcionServicio.calcularCostoConDescuento(CalidadStreaming.HD, 2);
+        double costoDescuentoMedio = suscripcionServicio.calcularCostoConDescuento(CalidadStreaming.HD, 6);
+        double costoDescuentoAlto = suscripcionServicio.calcularCostoConDescuento(CalidadStreaming.HD, 12);
 
         assertEquals(8.99, costoSinDescuento, 0.001);
         assertEquals(8.09, costoDescuentoMedio, 0.01);
@@ -41,7 +41,7 @@ class SuscripcionServicioTest {
 
     @Test
     void crearSuscripcionLaPersisteEnElDAO() {
-        Suscripcion suscripcion = suscripcionService.crearSuscripcion(1, 100, CalidadStreaming.UHD_4K);
+        Suscripcion suscripcion = suscripcionServicio.crearSuscripcion(1, 100, CalidadStreaming.UHD_4K);
 
         assertEquals(1, suscripcionDAO.listarPorUsuario(100).size());
         assertEquals(13.99, suscripcion.getCostoMensual());
@@ -49,9 +49,9 @@ class SuscripcionServicioTest {
 
     @Test
     void cancelarSuscripcionLaMarcaComoInactiva() {
-        Suscripcion suscripcion = suscripcionService.crearSuscripcion(1, 100, CalidadStreaming.SD);
+        Suscripcion suscripcion = suscripcionServicio.crearSuscripcion(1, 100, CalidadStreaming.SD);
 
-        suscripcionService.cancelarSuscripcion(suscripcion);
+        suscripcionServicio.cancelarSuscripcion(suscripcion);
 
         assertFalse(suscripcion.isActiva());
     }
