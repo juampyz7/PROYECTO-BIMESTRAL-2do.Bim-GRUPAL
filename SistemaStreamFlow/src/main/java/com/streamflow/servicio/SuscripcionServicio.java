@@ -45,16 +45,4 @@ public class SuscripcionServicio {
         suscripcion.setActiva(false);
         suscripcionDAO.actualizar(suscripcion);
     }
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.streamflow.servicio;
-
-/**
- *
- * @author Usuario iTC
- */
-public class SuscripcionServicio {
-    
 }
