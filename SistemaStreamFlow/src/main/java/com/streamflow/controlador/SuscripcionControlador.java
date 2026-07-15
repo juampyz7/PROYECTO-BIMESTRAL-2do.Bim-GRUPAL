@@ -8,21 +8,21 @@ import java.util.List;
 
 public class SuscripcionControlador {
 
-    private final SuscripcionServicio suscripcionService;
+    private final SuscripcionServicio suscripcionServicio;
 
     public SuscripcionControlador(SuscripcionServicio suscripcionService) {
-        this.suscripcionService = suscripcionService;
+        this.suscripcionServicio = suscripcionService;
     }
 
     public Suscripcion registrarSuscripcion(int id, int usuarioId, CalidadStreaming calidad) {
-        return suscripcionService.crearSuscripcion(id, usuarioId, calidad);
+        return suscripcionServicio.crearSuscripcion(id, usuarioId, calidad);
     }
 
     public List<Suscripcion> obtenerSuscripciones(int usuarioId) {
-        return suscripcionService.obtenerSuscripcionesDeUsuario(usuarioId);
+        return suscripcionServicio.obtenerSuscripcionesDeUsuario(usuarioId);
     }
 
     public void cancelarSuscripcion(Suscripcion suscripcion) {
-        suscripcionService.cancelarSuscripcion(suscripcion);
+        suscripcionServicio.cancelarSuscripcion(suscripcion);
     }
 }
