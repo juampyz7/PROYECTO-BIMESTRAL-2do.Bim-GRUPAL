@@ -24,4 +24,16 @@ public class RecomendacionServicio {
     public String obtenerResumenReproduccion(Contenido contenido) {
         return contenido.reproducir() + " | " + contenido.obtenerDetalles();
     }
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.streamflow.servicio;
+
+/**
+ *
+ * @author Usuario iTC
+ */
+public class RecomendacionServicio {
+    
 }
