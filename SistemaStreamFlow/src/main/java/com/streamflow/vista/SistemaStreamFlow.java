@@ -1,11 +1,15 @@
 package com.streamflow.vista;
 
+import com.streamflow.config.ConexionSQLite;
 import com.streamflow.controlador.ContenidoControlador;
 import com.streamflow.controlador.SuscripcionControlador;
+import com.streamflow.controlador.UsuarioControlador;
 import com.streamflow.dao.ContenidoDAO;
-import com.streamflow.dao.ContenidoDAOMemoria;
+import com.streamflow.dao.ContenidoDAOSQLite;
 import com.streamflow.dao.SuscripcionDAO;
-import com.streamflow.dao.SuscripcionDAOMemoria;
+import com.streamflow.dao.SuscripcionDAOSQLite;
+import com.streamflow.dao.UsuarioDAO;
+import com.streamflow.dao.UsuarioDAOSQLite;
 import com.streamflow.modelo.CalidadStreaming;
 import com.streamflow.modelo.Contenido;
 import com.streamflow.modelo.Genero;
@@ -13,6 +17,7 @@ import com.streamflow.modelo.Pelicula;
 import com.streamflow.modelo.Serie;
 import com.streamflow.modelo.Documental;
 import com.streamflow.modelo.Suscripcion;
+import com.streamflow.modelo.Usuario;
 import com.streamflow.servicio.RecomendacionServicio;
 import com.streamflow.servicio.SuscripcionServicio;
 
@@ -23,16 +28,34 @@ public class SistemaStreamFlow {
 
     private static final Scanner sc = new Scanner(System.in);
 
-    private static final ContenidoDAO contenidoDAO = new ContenidoDAOMemoria();
-    private static final SuscripcionDAO suscripcionDAO = new SuscripcionDAOMemoria();
+    private static final ContenidoDAO contenidoDAO = new ContenidoDAOSQLite(ConexionSQLite.URL_BASE_DATOS);
+    private static final SuscripcionDAO suscripcionDAO = new SuscripcionDAOSQLite(ConexionSQLite.URL_BASE_DATOS);
+    private static final UsuarioDAO usuarioDAO = new UsuarioDAOSQLite(ConexionSQLite.URL_BASE_DATOS);
 
-    private static final ContenidoControlador ContenidoControlador = new ContenidoControlador(contenidoDAO);
-    private static final SuscripcionControlador SuscripcionControlador =
-            new SuscripcionControlador(new SuscripcionServicio(suscripcionDAO));
+    private static final ContenidoControlador contenidoControlador = new ContenidoControlador(contenidoDAO);
+    private static final UsuarioControlador usuarioControlador = new UsuarioControlador(usuarioDAO);
+    private static final SuscripcionControlador suscripcionControlador =
+            new SuscripcionControlador(new SuscripcionServicio(suscripcionDAO, usuarioDAO));
     private static final RecomendacionServicio recomendacionServicio = new RecomendacionServicio(contenidoDAO);
 
-    private static int siguienteIdContenido = 1;
-    private static int siguienteIdSuscripcion = 1;
+    private static int siguienteIdContenido = calcularSiguienteIdContenido();
+    private static int siguienteIdSuscripcion = calcularSiguienteIdSuscripcion();
+
+    private static int calcularSiguienteIdContenido() {
+        int maximo = 0;
+        for (Contenido contenido : contenidoDAO.listarTodos()) {
+            maximo = Math.max(maximo, contenido.getId());
+        }
+        return maximo + 1;
+    }
+
+    private static int calcularSiguienteIdSuscripcion() {
+        int maximo = 0;
+        for (Suscripcion suscripcion : suscripcionDAO.listarTodas()) {
+            maximo = Math.max(maximo, suscripcion.getId());
+        }
+        return maximo + 1;
+    }
 
     public static void main(String[] args) {
         int opcion;
@@ -56,7 +79,13 @@ public class SistemaStreamFlow {
                     recomendarPorGenero();
                     break;
                 case 6:
+                    registrarUsuario();
+                    break;
+                case 7:
                     crearSuscripcion();
+                    break;
+                case 8:
+                    eliminarSuscripcion();
                     break;
                 case 0:
                     System.out.println("Saliendo del sistema");
@@ -76,7 +105,9 @@ public class SistemaStreamFlow {
         System.out.println("3. Agregar documental");
         System.out.println("4. Listar contenido");
         System.out.println("5. Recomendar por genero");
-        System.out.println("6. Crear suscripcion");
+        System.out.println("6. Registrar usuario");
+        System.out.println("7. Crear suscripcion");
+        System.out.println("8. Eliminar suscripcion");
         System.out.println("0. Salir");
         System.out.print("Seleccione una opcion: ");
     }
@@ -92,7 +123,7 @@ public class SistemaStreamFlow {
         String director = sc.nextLine();
 
         Contenido pelicula = new Pelicula(siguienteIdContenido, titulo, genero, calidad, duracion, director);
-        ContenidoControlador.agregarContenido(pelicula);
+        contenidoControlador.agregarContenido(pelicula);
         siguienteIdContenido++;
         System.out.println("Pelicula agregada correctamente");
     }
@@ -110,7 +141,7 @@ public class SistemaStreamFlow {
         int episodios = Integer.parseInt(sc.nextLine());
 
         Contenido serie = new Serie(siguienteIdContenido, titulo, genero, calidad, duracion, temporadas, episodios);
-        ContenidoControlador.agregarContenido(serie);
+        contenidoControlador.agregarContenido(serie);
         siguienteIdContenido++;
         System.out.println("Serie agregada correctamente");
     }
@@ -126,13 +157,13 @@ public class SistemaStreamFlow {
         String tema = sc.nextLine();
 
         Contenido documental = new Documental(siguienteIdContenido, titulo, genero, calidad, duracion, tema);
-        ContenidoControlador.agregarContenido(documental);
+        contenidoControlador.agregarContenido(documental);
         siguienteIdContenido++;
         System.out.println("Documental agregado correctamente");
     }
 
     private static void listarContenido() {
-        List<Contenido> lista = ContenidoControlador.listarContenido();
+        List<Contenido> lista = contenidoControlador.listarContenido();
         if (lista.isEmpty()) {
             System.out.println("No hay contenido registrado");
             return;
@@ -154,13 +185,77 @@ public class SistemaStreamFlow {
         }
     }
 
+    private static void registrarUsuario() {
+        String cedula = pedirCedula();
+        if (usuarioControlador.existeUsuario(cedula)) {
+            System.out.println("Ya existe un usuario registrado con esa cedula");
+            return;
+        }
+        System.out.print("Nombres: ");
+        String nombres = sc.nextLine();
+        System.out.print("Email (opcional, enter para omitir): ");
+        String email = sc.nextLine();
+
+        try {
+            usuarioControlador.registrarUsuario(cedula, nombres, email.isBlank() ? null : email);
+            System.out.println("Usuario registrado correctamente");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println("No se pudo registrar el usuario: " + e.getMessage());
+        }
+    }
+
     private static void crearSuscripcion() {
-        System.out.print("Id de usuario: ");
-        int usuarioId = Integer.parseInt(sc.nextLine());
+        String cedula = pedirCedula();
+        if (!usuarioControlador.existeUsuario(cedula)) {
+            System.out.println("No existe un usuario registrado con esa cedula. Registrelo primero con la opcion 6");
+            return;
+        }
         CalidadStreaming calidad = pedirCalidad();
-        Suscripcion suscripcion = SuscripcionControlador.registrarSuscripcion(siguienteIdSuscripcion, usuarioId, calidad);
-        siguienteIdSuscripcion++;
-        System.out.println("Suscripcion creada con costo mensual de " + suscripcion.getCostoMensual());
+        try {
+            Suscripcion suscripcion = suscripcionControlador.registrarSuscripcion(siguienteIdSuscripcion, cedula, calidad);
+            siguienteIdSuscripcion++;
+            System.out.println("Suscripcion creada con costo mensual de " + suscripcion.getCostoMensual());
+        } catch (IllegalArgumentException e) {
+            System.out.println("No se pudo crear la suscripcion: " + e.getMessage());
+        }
+    }
+
+    private static void eliminarSuscripcion() {
+        String cedula = pedirCedula();
+        if (!usuarioControlador.existeUsuario(cedula)) {
+            System.out.println("No existe un usuario registrado con esa cedula");
+            return;
+        }
+        List<Suscripcion> suscripciones = suscripcionControlador.obtenerSuscripciones(cedula);
+        if (suscripciones.isEmpty()) {
+            System.out.println("Ese usuario no tiene suscripciones registradas");
+            return;
+        }
+        System.out.println("Suscripciones del usuario:");
+        for (Suscripcion suscripcion : suscripciones) {
+            System.out.println("Id: " + suscripcion.getId() + " | Calidad: " + suscripcion.getCalidad()
+                    + " | Costo: " + suscripcion.getCostoMensual() + " | Activa: " + suscripcion.isActiva());
+        }
+        System.out.print("Id de la suscripcion a eliminar: ");
+        int id = Integer.parseInt(sc.nextLine());
+        try {
+            suscripcionControlador.eliminarSuscripcion(id);
+            System.out.println("Suscripcion eliminada correctamente");
+        } catch (IllegalArgumentException e) {
+            System.out.println("No se pudo eliminar la suscripcion: " + e.getMessage());
+        }
+    }
+
+    private static String pedirCedula() {
+        String cedula;
+        do {
+            System.out.print("Cedula (10 digitos): ");
+            cedula = sc.nextLine();
+            if (!cedula.matches("\\d{10}")) {
+                System.out.println("La cedula debe tener exactamente 10 digitos numericos");
+            }
+        } while (!cedula.matches("\\d{10}"));
+        return cedula;
     }
 
     private static Genero pedirGenero() {

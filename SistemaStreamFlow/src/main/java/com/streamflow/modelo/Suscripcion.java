@@ -5,15 +5,15 @@ import java.time.LocalDate;
 public class Suscripcion {
 
     private int id;
-    private int usuarioId;
+    private String cedulaUsuario;
     private CalidadStreaming calidad;
     private double costoMensual;
     private LocalDate fechaInicio;
     private boolean activa;
 
-    public Suscripcion(int id, int usuarioId, CalidadStreaming calidad, double costoMensual, LocalDate fechaInicio) {
+    public Suscripcion(int id, String cedulaUsuario, CalidadStreaming calidad, double costoMensual, LocalDate fechaInicio) {
         this.id = id;
-        this.usuarioId = usuarioId;
+        this.cedulaUsuario = cedulaUsuario;
         this.calidad = calidad;
         this.costoMensual = costoMensual;
         this.fechaInicio = fechaInicio;
@@ -28,12 +28,12 @@ public class Suscripcion {
         this.id = id;
     }
 
-    public int getUsuarioId() {
-        return usuarioId;
+    public String getCedulaUsuario() {
+        return cedulaUsuario;
     }
 
-    public void setUsuarioId(int usuarioId) {
-        this.usuarioId = usuarioId;
+    public void setCedulaUsuario(String cedulaUsuario) {
+        this.cedulaUsuario = cedulaUsuario;
     }
 
     public CalidadStreaming getCalidad() {

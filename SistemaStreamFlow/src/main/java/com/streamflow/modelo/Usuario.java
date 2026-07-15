@@ -5,32 +5,43 @@ import java.util.List;
 
 public class Usuario {
 
-    private int id;
-    private String nombre;
+    private String cedula;
+    private String nombres;
     private String email;
     private List<Genero> generosFavoritos;
 
-    public Usuario(int id, String nombre, String email) {
-        this.id = id;
-        this.nombre = nombre;
+    public Usuario(String cedula, String nombres, String email) {
+        validarCedula(cedula);
+        validarNombres(nombres);
+        this.cedula = cedula;
+        this.nombres = nombres;
         this.email = email;
         this.generosFavoritos = new ArrayList<>();
     }
 
-    public int getId() {
-        return id;
+    private void validarCedula(String cedula) {
+        if (cedula == null || !cedula.matches("\\d{10}")) {
+            throw new IllegalArgumentException("La cedula debe tener 10 digitos numericos");
+        }
     }
 
-    public void setId(int id) {
-        this.id = id;
+    private void validarNombres(String nombres) {
+        if (nombres == null || nombres.isBlank()) {
+            throw new IllegalArgumentException("Los nombres no pueden estar vacios");
+        }
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getCedula() {
+        return cedula;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public String getNombres() {
+        return nombres;
+    }
+
+    public void setNombres(String nombres) {
+        validarNombres(nombres);
+        this.nombres = nombres;
     }
 
     public String getEmail() {
@@ -49,3 +60,4 @@ public class Usuario {
         generosFavoritos.add(genero);
     }
 }
+

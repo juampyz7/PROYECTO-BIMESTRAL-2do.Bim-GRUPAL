@@ -22,10 +22,10 @@ public class SuscripcionDAOMemoria implements SuscripcionDAO {
     }
 
     @Override
-    public List<Suscripcion> listarPorUsuario(int usuarioId) {
+    public List<Suscripcion> listarPorUsuario(String cedulaUsuario) {
         List<Suscripcion> resultado = new ArrayList<>();
         for (Suscripcion suscripcion : almacen.values()) {
-            if (suscripcion.getUsuarioId() == usuarioId) {
+            if (suscripcion.getCedulaUsuario().equals(cedulaUsuario)) {
                 resultado.add(suscripcion);
             }
         }
@@ -33,7 +33,17 @@ public class SuscripcionDAOMemoria implements SuscripcionDAO {
     }
 
     @Override
+    public List<Suscripcion> listarTodas() {
+        return new ArrayList<>(almacen.values());
+    }
+
+    @Override
     public void actualizar(Suscripcion suscripcion) {
         almacen.put(suscripcion.getId(), suscripcion);
+    }
+
+    @Override
+    public void eliminar(int id) {
+        almacen.remove(id);
     }
 }

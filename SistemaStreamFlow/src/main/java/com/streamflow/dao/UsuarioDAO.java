@@ -8,9 +8,11 @@ public interface UsuarioDAO {
 
     void guardar(Usuario usuario);
 
-    Usuario buscarPorId(int id);
+    Usuario buscarPorCedula(String cedula);
+
+    boolean existePorCedula(String cedula);
 
     List<Usuario> listarTodos();
 
-    void eliminar(int id);
+    void eliminar(String cedula);
 }

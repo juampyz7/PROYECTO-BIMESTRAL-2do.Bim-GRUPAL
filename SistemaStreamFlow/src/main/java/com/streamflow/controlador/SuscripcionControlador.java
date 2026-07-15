@@ -14,15 +14,19 @@ public class SuscripcionControlador {
         this.suscripcionServicio = suscripcionServicio;
     }
 
-    public Suscripcion registrarSuscripcion(int id, int usuarioId, CalidadStreaming calidad) {
-        return suscripcionServicio.crearSuscripcion(id, usuarioId, calidad);
+    public Suscripcion registrarSuscripcion(int id, String cedulaUsuario, CalidadStreaming calidad) {
+        return suscripcionServicio.crearSuscripcion(id, cedulaUsuario, calidad);
     }
 
-    public List<Suscripcion> obtenerSuscripciones(int usuarioId) {
-        return suscripcionServicio.obtenerSuscripcionesDeUsuario(usuarioId);
+    public List<Suscripcion> obtenerSuscripciones(String cedulaUsuario) {
+        return suscripcionServicio.obtenerSuscripcionesDeUsuario(cedulaUsuario);
     }
 
     public void cancelarSuscripcion(Suscripcion suscripcion) {
         suscripcionServicio.cancelarSuscripcion(suscripcion);
+    }
+
+    public void eliminarSuscripcion(int id) {
+        suscripcionServicio.eliminarSuscripcion(id);
     }
 }

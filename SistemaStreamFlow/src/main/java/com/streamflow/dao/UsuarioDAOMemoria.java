@@ -9,16 +9,24 @@ import java.util.Map;
 
 public class UsuarioDAOMemoria implements UsuarioDAO {
 
-    private final Map<Integer, Usuario> almacen = new LinkedHashMap<>();
+    private final Map<String, Usuario> almacen = new LinkedHashMap<>();
 
     @Override
     public void guardar(Usuario usuario) {
-        almacen.put(usuario.getId(), usuario);
+        if (almacen.containsKey(usuario.getCedula())) {
+            throw new IllegalStateException("Ya existe un usuario registrado con la cedula " + usuario.getCedula());
+        }
+        almacen.put(usuario.getCedula(), usuario);
     }
 
     @Override
-    public Usuario buscarPorId(int id) {
-        return almacen.get(id);
+    public Usuario buscarPorCedula(String cedula) {
+        return almacen.get(cedula);
+    }
+
+    @Override
+    public boolean existePorCedula(String cedula) {
+        return almacen.containsKey(cedula);
     }
 
     @Override
@@ -27,7 +35,7 @@ public class UsuarioDAOMemoria implements UsuarioDAO {
     }
 
     @Override
-    public void eliminar(int id) {
-        almacen.remove(id);
+    public void eliminar(String cedula) {
+        almacen.remove(cedula);
     }
 }
