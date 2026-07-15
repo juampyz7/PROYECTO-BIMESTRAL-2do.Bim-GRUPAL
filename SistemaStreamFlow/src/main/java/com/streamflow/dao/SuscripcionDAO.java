@@ -1,13 +1,16 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.streamflow.dao;
 
-/**
- *
- * @author Usuario iTC
- */
-public class SuscripcionDAO {
-    
+import com.streamflow.modelo.Suscripcion;
+
+import java.util.List;
+
+public interface SuscripcionDAO {
+
+    void guardar(Suscripcion suscripcion);
+
+    Suscripcion buscarPorId(int id);
+
+    List<Suscripcion> listarPorUsuario(int usuarioId);
+
+    void actualizar(Suscripcion suscripcion);
 }
