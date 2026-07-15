@@ -10,8 +10,8 @@ public class SuscripcionControlador {
 
     private final SuscripcionServicio suscripcionServicio;
 
-    public SuscripcionControlador(SuscripcionServicio suscripcionService) {
-        this.suscripcionServicio = suscripcionService;
+    public SuscripcionControlador(SuscripcionServicio suscripcionServicio) {
+        this.suscripcionServicio = suscripcionServicio;
     }
 
     public Suscripcion registrarSuscripcion(int id, int usuarioId, CalidadStreaming calidad) {
