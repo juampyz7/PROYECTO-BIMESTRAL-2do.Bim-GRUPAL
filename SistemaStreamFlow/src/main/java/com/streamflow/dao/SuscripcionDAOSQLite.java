@@ -157,9 +157,4 @@ public class SuscripcionDAOSQLite implements SuscripcionDAO {
         suscripcion.setActiva(resultSet.getInt("activa") == 1);
         return suscripcion;
     }
-
-    @Override
-    public List<Suscripcion> listarPorUsuario(int usuarioId) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 }
