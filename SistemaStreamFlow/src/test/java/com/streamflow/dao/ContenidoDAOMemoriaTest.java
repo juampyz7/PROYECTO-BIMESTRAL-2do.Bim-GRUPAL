@@ -54,4 +54,3 @@ class ContenidoDAOMemoriaTest {
         assertTrue(contenidoDAO.listarTodos().isEmpty());
     }
 }
-
