@@ -2,10 +2,7 @@ package com.streamflow.dao;
 
 import com.streamflow.modelo.CalidadStreaming;
 import com.streamflow.modelo.Contenido;
-import com.streamflow.modelo.Documental;
 import com.streamflow.modelo.Genero;
-import com.streamflow.modelo.Pelicula;
-import com.streamflow.modelo.Serie;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,9 +16,15 @@ import java.util.List;
 public class ContenidoDAOSQLite implements ContenidoDAO {
 
     private final String urlConexion;
+    private final List<ContenidoTipoMapeador> mapeadores;
 
     public ContenidoDAOSQLite(String urlConexion) {
+        this(urlConexion, List.of(new PeliculaMapeador(), new SerieMapeador(), new DocumentalMapeador(), new ContenidoGenericoMapeador()));
+    }
+
+    public ContenidoDAOSQLite(String urlConexion, List<ContenidoTipoMapeador> mapeadores) {
         this.urlConexion = urlConexion;
+        this.mapeadores = mapeadores;
         crearTablaSiNoExiste();
     }
 
@@ -37,10 +40,7 @@ public class ContenidoDAOSQLite implements ContenidoDAO {
                 + "calidad TEXT NOT NULL,"
                 + "duracion_minutos INTEGER NOT NULL,"
                 + "tipo TEXT NOT NULL,"
-                + "director TEXT,"
-                + "temporadas INTEGER,"
-                + "episodios_por_temporada INTEGER,"
-                + "tema TEXT)";
+                + "atributos_extra TEXT)";
         try (Connection conexion = obtenerConexion();
              Statement statement = conexion.createStatement()) {
             statement.execute(sql);
@@ -51,9 +51,8 @@ public class ContenidoDAOSQLite implements ContenidoDAO {
 
     @Override
     public void guardar(Contenido contenido) {
-        String sql = "INSERT INTO contenido "
-                + "(id, titulo, genero, calidad, duracion_minutos, tipo, director, temporadas, episodios_por_temporada, tema) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO contenido (id, titulo, genero, calidad, duracion_minutos, tipo, atributos_extra) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conexion = obtenerConexion();
              PreparedStatement statement = conexion.prepareStatement(sql)) {
             asignarParametros(statement, contenido);
@@ -117,16 +116,17 @@ public class ContenidoDAOSQLite implements ContenidoDAO {
     @Override
     public void actualizar(Contenido contenido) {
         String sql = "UPDATE contenido SET titulo = ?, genero = ?, calidad = ?, duracion_minutos = ?, "
-                + "tipo = ?, director = ?, temporadas = ?, episodios_por_temporada = ?, tema = ? WHERE id = ?";
+                + "tipo = ?, atributos_extra = ? WHERE id = ?";
         try (Connection conexion = obtenerConexion();
              PreparedStatement statement = conexion.prepareStatement(sql)) {
+            ContenidoTipoMapeador mapeador = obtenerMapeador(contenido);
             statement.setString(1, contenido.getTitulo());
             statement.setString(2, contenido.getGenero().name());
             statement.setString(3, contenido.getCalidad().name());
             statement.setInt(4, contenido.getDuracionMinutos());
-            statement.setString(5, obtenerTipo(contenido));
-            asignarCamposEspecificos(statement, contenido, 6);
-            statement.setInt(10, contenido.getId());
+            statement.setString(5, mapeador.obtenerTipo());
+            statement.setString(6, mapeador.serializarAtributos(contenido));
+            statement.setInt(7, contenido.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Error al actualizar contenido", e);
@@ -146,45 +146,32 @@ public class ContenidoDAOSQLite implements ContenidoDAO {
     }
 
     private void asignarParametros(PreparedStatement statement, Contenido contenido) throws SQLException {
+        ContenidoTipoMapeador mapeador = obtenerMapeador(contenido);
         statement.setInt(1, contenido.getId());
         statement.setString(2, contenido.getTitulo());
         statement.setString(3, contenido.getGenero().name());
         statement.setString(4, contenido.getCalidad().name());
         statement.setInt(5, contenido.getDuracionMinutos());
-        statement.setString(6, obtenerTipo(contenido));
-        asignarCamposEspecificos(statement, contenido, 7);
+        statement.setString(6, mapeador.obtenerTipo());
+        statement.setString(7, mapeador.serializarAtributos(contenido));
     }
 
-    private void asignarCamposEspecificos(PreparedStatement statement, Contenido contenido, int indiceInicial) throws SQLException {
-        if (contenido instanceof Pelicula pelicula) {
-            statement.setString(indiceInicial, pelicula.getDirector());
-            statement.setNull(indiceInicial + 1, java.sql.Types.INTEGER);
-            statement.setNull(indiceInicial + 2, java.sql.Types.INTEGER);
-            statement.setNull(indiceInicial + 3, java.sql.Types.VARCHAR);
-        } else if (contenido instanceof Serie serie) {
-            statement.setNull(indiceInicial, java.sql.Types.VARCHAR);
-            statement.setInt(indiceInicial + 1, serie.getTemporadas());
-            statement.setInt(indiceInicial + 2, serie.getEpisodiosPorTemporada());
-            statement.setNull(indiceInicial + 3, java.sql.Types.VARCHAR);
-        } else if (contenido instanceof Documental documental) {
-            statement.setNull(indiceInicial, java.sql.Types.VARCHAR);
-            statement.setNull(indiceInicial + 1, java.sql.Types.INTEGER);
-            statement.setNull(indiceInicial + 2, java.sql.Types.INTEGER);
-            statement.setString(indiceInicial + 3, documental.getTema());
+    private ContenidoTipoMapeador obtenerMapeador(Contenido contenido) {
+        for (ContenidoTipoMapeador mapeador : mapeadores) {
+            if (mapeador.soporta(contenido)) {
+                return mapeador;
+            }
         }
+        throw new IllegalArgumentException("No hay un mapeador registrado para " + contenido.getClass().getSimpleName());
     }
 
-    private String obtenerTipo(Contenido contenido) {
-        if (contenido instanceof Pelicula) {
-            return "PELICULA";
+    private ContenidoTipoMapeador obtenerMapeadorPorTipo(String tipo) {
+        for (ContenidoTipoMapeador mapeador : mapeadores) {
+            if (mapeador.obtenerTipo().equals(tipo)) {
+                return mapeador;
+            }
         }
-        if (contenido instanceof Serie) {
-            return "SERIE";
-        }
-        if (contenido instanceof Documental) {
-            return "DOCUMENTAL";
-        }
-        throw new IllegalArgumentException("Tipo de contenido no soportado");
+        throw new IllegalStateException("Tipo de contenido desconocido: " + tipo);
     }
 
     private Contenido construirContenido(ResultSet resultSet) throws SQLException {
@@ -194,13 +181,10 @@ public class ContenidoDAOSQLite implements ContenidoDAO {
         CalidadStreaming calidad = CalidadStreaming.valueOf(resultSet.getString("calidad"));
         int duracion = resultSet.getInt("duracion_minutos");
         String tipo = resultSet.getString("tipo");
+        String atributosExtra = resultSet.getString("atributos_extra");
 
-        return switch (tipo) {
-            case "PELICULA" -> new Pelicula(id, titulo, genero, calidad, duracion, resultSet.getString("director"));
-            case "SERIE" -> new Serie(id, titulo, genero, calidad, duracion,
-                    resultSet.getInt("temporadas"), resultSet.getInt("episodios_por_temporada"));
-            case "DOCUMENTAL" -> new Documental(id, titulo, genero, calidad, duracion, resultSet.getString("tema"));
-            default -> throw new IllegalStateException("Tipo de contenido desconocido: " + tipo);
-        };
+        ContenidoTipoMapeador mapeador = obtenerMapeadorPorTipo(tipo);
+        return mapeador.construir(id, titulo, genero, calidad, duracion, atributosExtra);
     }
 }
+
