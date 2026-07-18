@@ -17,7 +17,7 @@ public class ContenidoGenerico extends Contenido {
 
     @Override
     public String reproducir() {
-        return "Reproduciendo " + tipoPersonalizado + ": " + titulo + " (" + calidad + ")";
+        return "Reproduciendo " + tipoPersonalizado + ": " + titulo + " (" + obtenerEtiquetaCalidad() + ")";
     }
 
     @Override
@@ -29,8 +29,16 @@ public class ContenidoGenerico extends Contenido {
             detalles.append(" | ").append(atributo.getKey()).append(": ").append(atributo.getValue());
         }
         detalles.append(" | Duracion: ").append(duracionMinutos)
-                .append(" min | Calidad: ").append(calidad);
+                .append(" min | Calidad: ").append(obtenerEtiquetaCalidad());
         return detalles.toString();
+    }
+
+    private String obtenerEtiquetaCalidad() {
+        return switch (calidad) {
+            case SD -> "Baja";
+            case HD -> "Estandar";
+            case UHD_4K -> "Alta";
+        };
     }
 
     @Override

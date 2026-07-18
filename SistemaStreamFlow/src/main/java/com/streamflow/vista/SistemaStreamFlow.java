@@ -102,7 +102,7 @@ public class SistemaStreamFlow {
 
     private static void mostrarMenu() {
         System.out.println("");
-        System.out.println("======== StreamFlow ========");
+        System.out.println("============ StreamFlow ============");
         System.out.println("1. Agregar pelicula");
         System.out.println("2. Agregar serie");
         System.out.println("3. Agregar documental");
@@ -169,7 +169,7 @@ public class SistemaStreamFlow {
         System.out.print("Titulo: ");
         String titulo = sc.nextLine();
         Genero genero = pedirGenero();
-        CalidadStreaming calidad = pedirCalidad();
+        CalidadStreaming calidad = pedirCalidadPersonalizada();
         System.out.print("Duracion en minutos: ");
         int duracion = Integer.parseInt(sc.nextLine());
         System.out.print("Nombre del nuevo tipo de contenido (ejemplo: Podcast, AudioLibro): ");
@@ -309,5 +309,20 @@ public class SistemaStreamFlow {
         } while (opcion < 1 || opcion > calidades.length);
         return calidades[opcion - 1];
     }
-}
 
+    private static CalidadStreaming pedirCalidadPersonalizada() {
+        int opcion;
+        do {
+            System.out.println("Seleccione la calidad:");
+            System.out.println("1. Baja");
+            System.out.println("2. Estandar");
+            System.out.println("3. Alta");
+            opcion = Integer.parseInt(sc.nextLine());
+        } while (opcion < 1 || opcion > 3);
+        return switch (opcion) {
+            case 1 -> CalidadStreaming.SD;
+            case 2 -> CalidadStreaming.HD;
+            default -> CalidadStreaming.UHD_4K;
+        };
+    }
+}
