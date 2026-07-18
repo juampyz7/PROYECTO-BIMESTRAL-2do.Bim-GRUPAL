@@ -12,6 +12,7 @@ import com.streamflow.dao.UsuarioDAO;
 import com.streamflow.dao.UsuarioDAOSQLite;
 import com.streamflow.modelo.CalidadStreaming;
 import com.streamflow.modelo.Contenido;
+import com.streamflow.modelo.ContenidoGenerico;
 import com.streamflow.modelo.Genero;
 import com.streamflow.modelo.Pelicula;
 import com.streamflow.modelo.Serie;
@@ -21,7 +22,9 @@ import com.streamflow.modelo.Usuario;
 import com.streamflow.servicio.RecomendacionServicio;
 import com.streamflow.servicio.SuscripcionServicio;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class SistemaStreamFlow {
@@ -73,16 +76,16 @@ public class SistemaStreamFlow {
                     agregarDocumental();
                     break;
                 case 4:
-                    listarContenido();
+                    agregarContenidoPersonalizado();
                     break;
                 case 5:
-                    recomendarPorGenero();
+                    listarContenido();
                     break;
                 case 6:
-                    registrarUsuario();
+                    recomendarPorGenero();
                     break;
                 case 7:
-                    crearSuscripcion();
+                    registrarSuscripcion();
                     break;
                 case 8:
                     eliminarSuscripcion();
@@ -99,14 +102,14 @@ public class SistemaStreamFlow {
 
     private static void mostrarMenu() {
         System.out.println("");
-        System.out.println("=== StreamFlow ===");
+        System.out.println("======== StreamFlow ========");
         System.out.println("1. Agregar pelicula");
         System.out.println("2. Agregar serie");
         System.out.println("3. Agregar documental");
-        System.out.println("4. Listar contenido");
-        System.out.println("5. Recomendar por genero");
-        System.out.println("6. Registrar usuario");
-        System.out.println("7. Crear suscripcion");
+        System.out.println("4. Agregar nuevo tipo de contenido");
+        System.out.println("5. Listar contenido");
+        System.out.println("6. Recomendar por genero");
+        System.out.println("7. Registrar suscripcion");
         System.out.println("8. Eliminar suscripcion");
         System.out.println("0. Salir");
         System.out.print("Seleccione una opcion: ");
@@ -162,6 +165,34 @@ public class SistemaStreamFlow {
         System.out.println("Documental agregado correctamente");
     }
 
+    private static void agregarContenidoPersonalizado() {
+        System.out.print("Titulo: ");
+        String titulo = sc.nextLine();
+        Genero genero = pedirGenero();
+        CalidadStreaming calidad = pedirCalidad();
+        System.out.print("Duracion en minutos: ");
+        int duracion = Integer.parseInt(sc.nextLine());
+        System.out.print("Nombre del nuevo tipo de contenido (ejemplo: Podcast, AudioLibro): ");
+        String tipoPersonalizado = sc.nextLine();
+
+        Map<String, String> atributos = new LinkedHashMap<>();
+        String continuar;
+        do {
+            System.out.print("Nombre del atributo a agregar (ejemplo: anfitrion, narrador): ");
+            String nombreAtributo = sc.nextLine();
+            System.out.print("Valor de " + nombreAtributo + ": ");
+            String valorAtributo = sc.nextLine();
+            atributos.put(nombreAtributo, valorAtributo);
+            System.out.print("Desea agregar otro atributo? (s/n): ");
+            continuar = sc.nextLine();
+        } while (continuar.equalsIgnoreCase("s"));
+
+        Contenido contenido = new ContenidoGenerico(siguienteIdContenido, titulo, genero, calidad, duracion, tipoPersonalizado, atributos);
+        contenidoControlador.agregarContenido(contenido);
+        siguienteIdContenido++;
+        System.out.println(tipoPersonalizado + " agregado correctamente");
+    }
+
     private static void listarContenido() {
         List<Contenido> lista = contenidoControlador.listarContenido();
         if (lista.isEmpty()) {
@@ -185,31 +216,26 @@ public class SistemaStreamFlow {
         }
     }
 
-    private static void registrarUsuario() {
+    private static void registrarSuscripcion() {
         String cedula = pedirCedula();
-        if (usuarioControlador.existeUsuario(cedula)) {
-            System.out.println("Ya existe un usuario registrado con esa cedula");
-            return;
-        }
-        System.out.print("Nombres: ");
-        String nombres = sc.nextLine();
-        System.out.print("Email (opcional, enter para omitir): ");
-        String email = sc.nextLine();
 
-        try {
-            usuarioControlador.registrarUsuario(cedula, nombres, email.isBlank() ? null : email);
-            System.out.println("Usuario registrado correctamente");
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            System.out.println("No se pudo registrar el usuario: " + e.getMessage());
-        }
-    }
-
-    private static void crearSuscripcion() {
-        String cedula = pedirCedula();
         if (!usuarioControlador.existeUsuario(cedula)) {
-            System.out.println("No existe un usuario registrado con esa cedula. Registrelo primero con la opcion 6");
-            return;
+            System.out.print("Nombres: ");
+            String nombres = sc.nextLine();
+            System.out.print("Email (opcional, enter para omitir): ");
+            String email = sc.nextLine();
+
+            try {
+                usuarioControlador.registrarUsuario(cedula, nombres, email.isBlank() ? null : email);
+                System.out.println("Usuario registrado correctamente");
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                System.out.println("No se pudo registrar el usuario: " + e.getMessage());
+                return;
+            }
+        } else {
+            System.out.println("El usuario ya estaba registrado, continuamos con la suscripcion");
         }
+
         CalidadStreaming calidad = pedirCalidad();
         try {
             Suscripcion suscripcion = suscripcionControlador.registrarSuscripcion(siguienteIdSuscripcion, cedula, calidad);
@@ -284,3 +310,4 @@ public class SistemaStreamFlow {
         return calidades[opcion - 1];
     }
 }
+
