@@ -59,10 +59,9 @@ El proyecto sigue el patrón **MVC**, organizado en los siguientes paquetes:
 git clone https://github.com/juampyz7/PROYECTO-BIMESTRAL-2do.Bim-GRUPAL.git
 cd PROYECTO-BIMESTRAL-2do.Bim-GRUPAL
 mvn clean install
-mvn exec:java
 ```
 
-La base de datos `streamflow.db` se genera automáticamente en la raíz del proyecto la primera vez que se ejecuta.
+Luego abre el proyecto en NetBeans y ejecuta `SistemaStreamFlow.java` (paquete `com.streamflow.vista`) con **Run File**.
 
 ### Correr las pruebas
 
