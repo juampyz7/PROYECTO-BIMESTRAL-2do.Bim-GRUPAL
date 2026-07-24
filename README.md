@@ -79,3 +79,4 @@ mvn test
 
 - Informe técnico: análisis de SOLID, patrones de diseño y evidencias de ejecución.
 - Diagramas UML (clases y secuencia) disponibles en la carpeta correspondiente del repositorio.
+- Video Explicativo sobre el funcionamiento del sistema "StreamFlow"
